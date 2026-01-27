@@ -2,12 +2,17 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { CartProvider } from "./context/CartContext";
-import "./index.css"; // Jeśli masz ten plik
+import { AuthProvider } from "./context/AuthContext"; // <--- Nowy import
+import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <CartProvider>
-      <App />
-    </CartProvider>
+    <AuthProvider>
+      {" "}
+      {/* <--- Dodajemy AuthProvider na zewnątrz */}
+      <CartProvider>
+        <App />
+      </CartProvider>
+    </AuthProvider>
   </React.StrictMode>,
 );
