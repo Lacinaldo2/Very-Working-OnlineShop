@@ -33,7 +33,7 @@ const Navbar = () => {
           textDecoration: "none",
         }}
       >
-        ShopReact
+        Alegro
       </Link>
 
       {/* Linki */}
@@ -68,6 +68,18 @@ const Navbar = () => {
             </span>
           )}
         </Link>
+
+        {user && (
+          <Link
+            to="/history"
+            style={{
+              marginRight: "15px",
+              textDecoration: "none",
+            }}
+          >
+            Moje Zamówienia
+          </Link>
+        )}
 
         {/* Sekcja Logowania / Profilu */}
         {user ? (

@@ -1,57 +1,124 @@
 import { useContext } from "react";
 import { CartContext } from "../context/CartContext";
+import { AuthContext } from "../context/AuthContext";
+import { OrderContext } from "../context/OrderContext";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
-  const { cart, removeFromCart, total } = useContext(CartContext);
+  const { cart, removeFromCart, total, setCart } = useContext(CartContext); // Upewnij się, że masz setCart lub clearCart
+  const { user } = useContext(AuthContext);
+  const { addOrder } = useContext(OrderContext);
+  const navigate = useNavigate();
+
+  const handleCheckout = () => {
+    // 1. Sprawdzenie czy użytkownik jest zalogowany (Wymóg 1.3)
+    if (!user) {
+      alert("Musisz być zalogowany, aby złożyć zamówienie!");
+      navigate("/login");
+      return;
+    }
+
+    // 2. Stworzenie zamówienia
+    addOrder(cart, total);
+
+    // 3. Wyczyszczenie koszyka
+    setCart([]); // Resetujemy stan koszyka
+
+    // 4. Przekierowanie do historii
+    alert("Zamówienie przyjęte!");
+    navigate("/history");
+  };
 
   if (cart.length === 0)
-    return <h2 style={{ padding: "20px" }}>Twój koszyk jest pusty.</h2>;
+    return (
+      <h2 style={{ padding: "40px", textAlign: "center" }}>
+        Twój koszyk jest pusty.
+      </h2>
+    );
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div style={{ maxWidth: "800px", margin: "40px auto", padding: "20px" }}>
       <h1>Twój Koszyk</h1>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>
-            <th>Produkt</th>
-            <th>Cena</th>
-            <th>Ilość</th>
-            <th>Akcja</th>
-          </tr>
-        </thead>
-        <tbody>
-          {cart.map((item) => (
-            <tr key={item.id} style={{ borderBottom: "1px solid #eee" }}>
-              <td style={{ padding: "10px" }}>{item.title}</td>
-              <td>{item.price} PLN</td>
-              <td>{item.quantity}</td>
-              <td>
-                <button
-                  onClick={() => removeFromCart(item.id)}
-                  style={{ color: "red", cursor: "pointer" }}
-                >
-                  Usuń
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Przeliczanie zawartości [cite: 33] */}
-      <h3 style={{ marginTop: "20px", textAlign: "right" }}>
-        Suma całkowita: {total.toFixed(2)} PLN
-      </h3>
-      <button
+      <div
         style={{
-          float: "right",
-          padding: "10px",
-          background: "blue",
-          color: "white",
+          background: "white",
+          borderRadius: "8px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+          overflow: "hidden",
         }}
       >
-        Akceptuj koszyk
-      </button>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead style={{ background: "#f8fafc" }}>
+            <tr style={{ textAlign: "left" }}>
+              <th style={{ padding: "15px" }}>Produkt</th>
+              <th style={{ padding: "15px" }}>Cena</th>
+              <th style={{ padding: "15px" }}>Ilość</th>
+              <th style={{ padding: "15px" }}>Akcja</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cart.map((item) => (
+              <tr key={item.id} style={{ borderBottom: "1px solid #eee" }}>
+                <td
+                  style={{
+                    padding: "15px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                  }}
+                >
+                  <img
+                    src={item.image}
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      objectFit: "contain",
+                    }}
+                  />
+                  {item.title.substring(0, 30)}...
+                </td>
+                <td style={{ padding: "15px" }}>{item.price} PLN</td>
+                <td style={{ padding: "15px" }}>{item.quantity}</td>
+                <td style={{ padding: "15px" }}>
+                  <button
+                    onClick={() => removeFromCart(item.id)}
+                    style={{
+                      color: "red",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Usuń
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{ marginTop: "30px", textAlign: "right" }}>
+        <h3 style={{ fontSize: "1.5rem", marginBottom: "20px" }}>
+          Suma: <span style={{ color: "#3b82f6" }}>{total.toFixed(2)} PLN</span>
+        </h3>
+        <button
+          onClick={handleCheckout}
+          style={{
+            padding: "12px 30px",
+            background: "#16a34a",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            fontSize: "1.1rem",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          Zapłać i Zamów
+        </button>
+      </div>
     </div>
   );
 };
