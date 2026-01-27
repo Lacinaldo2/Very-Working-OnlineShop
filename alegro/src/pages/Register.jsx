@@ -1,22 +1,29 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
-const Login = () => {
+const Register = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [error, setError] = useState("");
 
-  const { login } = useContext(AuthContext);
-  const navigate = useNavigate(); // Do przekierowania po zalogowaniu
+  const { register } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const result = login(username, password);
+
+    if (!username || !password || !name) {
+      setError("Wypełnij wszystkie pola!");
+      return;
+    }
+
+    const result = register(username, password, name);
 
     if (result.success) {
-      navigate("/"); // Przekieruj na stronę główną
+      alert("Konto założone! Możesz się zalogować.");
+      navigate("/login");
     } else {
       setError(result.message);
     }
@@ -33,7 +40,7 @@ const Login = () => {
         background: "white",
       }}
     >
-      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Zaloguj się</h2>
+      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Załóż konto</h2>
 
       {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
 
@@ -43,7 +50,18 @@ const Login = () => {
       >
         <input
           type="text"
-          placeholder="Login (np. student1)"
+          placeholder="Imię i Nazwisko"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          style={{
+            padding: "10px",
+            borderRadius: "5px",
+            border: "1px solid #ccc",
+          }}
+        />
+        <input
+          type="text"
+          placeholder="Login"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           style={{
@@ -54,7 +72,7 @@ const Login = () => {
         />
         <input
           type="password"
-          placeholder="Hasło (np. 123)"
+          placeholder="Hasło"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           style={{
@@ -67,7 +85,7 @@ const Login = () => {
           type="submit"
           style={{
             padding: "10px",
-            background: "#3b82f6",
+            background: "#22c55e",
             color: "white",
             border: "none",
             borderRadius: "5px",
@@ -75,26 +93,18 @@ const Login = () => {
             fontWeight: "bold",
           }}
         >
-          Zaloguj
+          Zarejestruj się
         </button>
       </form>
 
       <p style={{ textAlign: "center", marginTop: "20px" }}>
-        Nie masz konta?{" "}
-        <Link to="/register" style={{ color: "#3b82f6" }}>
-          Zarejestruj się
+        Masz już konto?{" "}
+        <Link to="/login" style={{ color: "#3b82f6" }}>
+          Zaloguj się
         </Link>
       </p>
-
-      <div style={{ marginTop: "20px", fontSize: "0.8rem", color: "#666" }}>
-        <p>Dane testowe:</p>
-        <ul>
-          <li>student1 / 123</li>
-          <li>admin / admin</li>
-        </ul>
-      </div>
     </div>
   );
 };
 
-export default Login;
+export default Register;

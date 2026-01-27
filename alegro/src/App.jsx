@@ -5,6 +5,7 @@ import Cart from "./pages/Cart";
 import Login from "./pages/Login";
 import Navbar from "./components/Navbar"; // Zaraz go stworzymy
 import OrderHistory from "./pages/OrderHistory";
+import Register from "./pages/Register";
 
 function App() {
   return (
@@ -25,6 +26,9 @@ function App() {
         <Route path="/history" element={<OrderHistory />} />
 
         {/* Logowanie [cite: 26] */}
+
+        <Route path="/register" element={<Register />} />
+
         <Route path="/login" element={<Login />} />
       </Routes>
     </BrowserRouter>

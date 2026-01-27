@@ -54,10 +54,10 @@ const Home = () => {
       {/* --- Sekcja Hero / Nagłówek --- */}
       <div style={{ textAlign: "center", marginBottom: "40px" }}>
         <h1 style={{ fontSize: "2.5rem", marginBottom: "10px" }}>
-          Witaj w FakeStore
+          Witaj w Alegro
         </h1>
         <p style={{ color: "#64748b" }}>
-          Najlepsze produkty w wirtualnym świecie
+          Najbardziej legit strona w całej equestri
         </p>
 
         {/* Wyszukiwarka */}
