@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
+import ProductReviews from "../components/ProductReviews";
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -8,29 +9,10 @@ const ProductDetails = () => {
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Stan dla ilości (Wymóg: input ilości)
   const [quantity, setQuantity] = useState(1);
 
-  // Stan dla opinii (Wymóg: dodawanie opinii)
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      user: "Jan Kowalski",
-      rating: 5,
-      text: "Świetny produkt, polecam!",
-    },
-    {
-      id: 2,
-      user: "Anna Nowak",
-      rating: 4,
-      text: "Dobra jakość, ale szybka dostawa.",
-    },
-  ]);
-  const [newReviewText, setNewReviewText] = useState("");
-  const [newRating, setNewRating] = useState(5);
-
   useEffect(() => {
+    setLoading(true);
     fetch(`https://fakestoreapi.com/products/${id}`)
       .then((res) => res.json())
       .then((data) => {
@@ -40,24 +22,9 @@ const ProductDetails = () => {
   }, [id]);
 
   const handleAddToCart = () => {
+    if (!product) return;
     addToCart(product, quantity);
-    setQuantity(1); // Reset ilości po dodaniu
-  };
-
-  const handleAddReview = (e) => {
-    e.preventDefault();
-    if (!newReviewText) return alert("Wpisz treść opinii!");
-
-    const newReview = {
-      id: Date.now(),
-      user: "Ty (Gość)", // Tutaj w przyszłości wstawimy nazwę zalogowanego usera
-      rating: newRating,
-      text: newReviewText,
-    };
-
-    setReviews([newReview, ...reviews]); // Dodajemy nową opinię na górę
-    setNewReviewText(""); // Czyścimy formularz
-    alert("Dziękujemy za opinię!");
+    setQuantity(1);
   };
 
   if (loading)
@@ -65,9 +32,15 @@ const ProductDetails = () => {
       <div style={{ textAlign: "center", marginTop: "50px" }}>Ładowanie...</div>
     );
 
+  if (!product)
+    return (
+      <div style={{ textAlign: "center", marginTop: "50px" }}>
+        Nie znaleziono produktu.
+      </div>
+    );
+
   return (
     <div style={{ maxWidth: "1000px", margin: "40px auto", padding: "20px" }}>
-      {/* --- Sekcja Produktu --- */}
       <div
         style={{
           display: "flex",
@@ -115,7 +88,6 @@ const ProductDetails = () => {
             {product.price} PLN
           </h2>
 
-          {/* Kontrolki Ilości i Dodawania */}
           <div
             style={{
               display: "flex",
@@ -182,99 +154,7 @@ const ProductDetails = () => {
         </div>
       </div>
 
-      {/* --- Sekcja Opinii (Reviews) --- */}
-      <div style={{ marginTop: "60px" }}>
-        <h3 style={{ fontSize: "1.5rem", marginBottom: "20px" }}>
-          Opinie o produkcie ({reviews.length})
-        </h3>
-
-        {/* Formularz dodawania opinii */}
-        <div
-          style={{
-            background: "#f8fafc",
-            padding: "20px",
-            borderRadius: "12px",
-            marginBottom: "30px",
-            border: "1px solid #e2e8f0",
-          }}
-        >
-          <h4 style={{ margin: "0 0 15px 0" }}>Napisz opinię</h4>
-          <form onSubmit={handleAddReview}>
-            <div style={{ marginBottom: "10px" }}>
-              <label style={{ marginRight: "10px" }}>Twoja ocena:</label>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                  key={star}
-                  onClick={() => setNewRating(star)}
-                  style={{
-                    cursor: "pointer",
-                    fontSize: "1.5rem",
-                    color: star <= newRating ? "#fbbf24" : "#cbd5e1",
-                  }}
-                >
-                  ★
-                </span>
-              ))}
-            </div>
-            <textarea
-              value={newReviewText}
-              onChange={(e) => setNewReviewText(e.target.value)}
-              placeholder="Co sądzisz o tym produkcie?"
-              style={{
-                width: "100%",
-                padding: "10px",
-                borderRadius: "8px",
-                border: "1px solid #cbd5e1",
-                minHeight: "80px",
-                marginBottom: "10px",
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                padding: "8px 20px",
-                background: "#3b82f6",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-              }}
-            >
-              Wyślij opinię
-            </button>
-          </form>
-        </div>
-
-        {/* Lista opinii */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          {reviews.map((review) => (
-            <div
-              key={review.id}
-              style={{
-                background: "white",
-                padding: "20px",
-                borderRadius: "8px",
-                border: "1px solid #f1f5f9",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: "5px",
-                }}
-              >
-                <strong>{review.user}</strong>
-                <div style={{ color: "#fbbf24" }}>
-                  {"★".repeat(review.rating)}
-                  {"☆".repeat(5 - review.rating)}
-                </div>
-              </div>
-              <p style={{ margin: 0, color: "#475569" }}>{review.text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+      <ProductReviews productId={id} />
     </div>
   );
 };
