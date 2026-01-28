@@ -1,44 +1,35 @@
 import { useEffect, useMemo, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import {
-  deleteAllReviewsForProduct,
-  deleteReview,
-  getReviewsForProduct,
-  getUserReviewForProduct,
-  upsertReview,
-} from "../services/reviewsDb";
+import { api } from "../mockServer/api";
 
 const emailOk = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-const Stars = ({ value, onChange, size = "1.5rem" }) => {
-  return (
-    <div
-      style={{
-        display: "inline-flex",
-        gap: "4px",
-        cursor: "pointer",
-        userSelect: "none",
-      }}
-    >
-      {[1, 2, 3, 4, 5].map((s) => (
-        <span
-          key={s}
-          onClick={() => onChange(s)}
-          style={{ fontSize: size, color: s <= value ? "#fbbf24" : "#cbd5e1" }}
-          aria-label={`${s} gwiazdek`}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") onChange(s);
-          }}
-        >
-          ★
-        </span>
-      ))}
-    </div>
-  );
-};
+const Stars = ({ value, onChange, size = "1.5rem" }) => (
+  <div
+    style={{
+      display: "inline-flex",
+      gap: "4px",
+      cursor: "pointer",
+      userSelect: "none",
+    }}
+  >
+    {[1, 2, 3, 4, 5].map((s) => (
+      <span
+        key={s}
+        onClick={() => onChange(s)}
+        style={{ fontSize: size, color: s <= value ? "#fbbf24" : "#cbd5e1" }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") onChange(s);
+        }}
+      >
+        ★
+      </span>
+    ))}
+  </div>
+);
 
 const ProductReviews = ({ productId }) => {
   const { user } = useContext(AuthContext);
@@ -52,18 +43,19 @@ const ProductReviews = ({ productId }) => {
 
   const isAdmin = user?.role === "admin";
 
-  const userReview = useMemo(() => {
-    if (!user) return null;
-    return getUserReviewForProduct(productId, user.id);
-  }, [productId, user]);
-
-  const refresh = () => {
-    setReviews(getReviewsForProduct(productId));
+  const refresh = async () => {
+    const res = await api.reviewsForProduct(productId);
+    setReviews(res.ok ? res.reviews : []);
   };
 
   useEffect(() => {
     refresh();
   }, [productId]);
+
+  const userReview = useMemo(() => {
+    if (!user) return null;
+    return reviews.find((r) => String(r.userId) === String(user.id)) || null;
+  }, [reviews, user]);
 
   useEffect(() => {
     if (!user) {
@@ -74,7 +66,6 @@ const ProductReviews = ({ productId }) => {
       setError("");
       return;
     }
-
     if (userReview) {
       setMode("edit");
       setEmail(userReview.userEmail || "");
@@ -99,15 +90,14 @@ const ProductReviews = ({ productId }) => {
     return "";
   };
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     const v = validate();
     if (v) {
       setError(v);
       return;
     }
-
-    upsertReview({
+    await api.reviewsUpsert({
       productId,
       userId: user.id,
       userName: user.name || user.username,
@@ -115,16 +105,15 @@ const ProductReviews = ({ productId }) => {
       rating,
       message: message.trim(),
     });
-
-    refresh();
+    await refresh();
     setError("");
     setMode("edit");
   };
 
-  const removeMine = () => {
+  const removeMine = async () => {
     if (!userReview) return;
-    deleteReview(userReview.id);
-    refresh();
+    await api.reviewsDelete(userReview.id);
+    await refresh();
     setMode("create");
     setEmail("");
     setMessage("");
@@ -132,14 +121,14 @@ const ProductReviews = ({ productId }) => {
     setError("");
   };
 
-  const removeAny = (reviewId) => {
-    deleteReview(reviewId);
-    refresh();
+  const removeAny = async (reviewId) => {
+    await api.reviewsDelete(reviewId);
+    await refresh();
   };
 
-  const removeAll = () => {
-    deleteAllReviewsForProduct(productId);
-    refresh();
+  const removeAll = async () => {
+    await api.reviewsDeleteAllForProduct(productId);
+    await refresh();
   };
 
   return (

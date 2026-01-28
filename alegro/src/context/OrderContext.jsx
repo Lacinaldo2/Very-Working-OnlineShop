@@ -1,102 +1,82 @@
 import {
   createContext,
+  useCallback,
+  useContext,
   useEffect,
   useState,
-  useContext,
-  useCallback,
 } from "react";
 import { AuthContext } from "./AuthContext";
+import { api } from "../mockServer/api";
 
 export const OrderContext = createContext();
 
-const STORAGE_KEY = "orders";
-
-const readOrders = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
-};
-
-const writeOrders = (orders) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
-};
-
 export const OrderProvider = ({ children }) => {
-  const [orders, setOrders] = useState([]);
   const { user } = useContext(AuthContext);
+  const [orders, setOrders] = useState([]);
+
+  const refreshMyOrders = useCallback(async () => {
+    if (!user) {
+      setOrders([]);
+      return;
+    }
+    const res = await api.ordersForUser(user.username);
+    setOrders(res.ok ? res.orders : []);
+  }, [user]);
 
   useEffect(() => {
-    setOrders(readOrders());
-  }, []);
+    refreshMyOrders();
+  }, [refreshMyOrders]);
 
-  const persist = (next) => {
-    setOrders(next);
-    writeOrders(next);
-  };
+  const createOrder = useCallback(
+    async (arg1, arg2) => {
+      if (!user) return { ok: false, error: "Musisz być zalogowany." };
+
+      let items = [];
+      let total = 0;
+
+      if (Array.isArray(arg1)) {
+        items = arg1;
+        total = Number(arg2) || 0;
+      } else if (arg1 && typeof arg1 === "object") {
+        items = arg1.items || [];
+        total = Number(arg1.totalPrice ?? arg1.total ?? 0) || 0;
+      }
+
+      const res = await api.ordersCreate({ user, items, total });
+      await refreshMyOrders();
+      return res;
+    },
+    [user, refreshMyOrders],
+  );
 
   const addOrder = useCallback(
-    (cartItems, total) => {
-      const newOrder = {
-        id: Date.now(),
-        date: new Date().toLocaleString(),
-        items: Array.isArray(cartItems) ? cartItems : [],
-        total: Number(total) || 0,
-        user: user ? user.username : "guest",
-      };
-
-      const next = [newOrder, ...orders];
-      persist(next);
-      return newOrder;
-    },
-    [orders, user],
+    async (cartItems, total) => createOrder(cartItems, total),
+    [createOrder],
   );
 
-  // alias pod Cart.jsx z Twojej wersji (createOrder)
-  // obsługuje 2 style:
-  // 1) createOrder(cartItems, total)
-  // 2) createOrder({ items, totalPrice })
-  const createOrder = useCallback(
-    (arg1, arg2) => {
-      if (Array.isArray(arg1)) return addOrder(arg1, arg2);
-      if (arg1 && typeof arg1 === "object") {
-        const items = arg1.items || [];
-        const totalPrice = arg1.totalPrice ?? arg1.total ?? 0;
-        return addOrder(items, totalPrice);
-      }
-      return addOrder([], 0);
-    },
-    [addOrder],
-  );
-
-  const getUserOrders = useCallback(() => {
-    if (!user) return [];
-    return orders.filter((o) => o.user === user.username);
-  }, [orders, user]);
+  const getUserOrders = useCallback(() => orders, [orders]);
 
   const getUserOrderById = useCallback(
-    (orderId) => {
+    async (orderId) => {
       if (!user) return null;
-      const o = orders.find((x) => String(x.id) === String(orderId)) || null;
+      const res = await api.ordersGetById(orderId);
+      const o = res.ok ? res.order : null;
       if (!o) return null;
-      if (o.user !== user.username) return null;
+      if (String(o.user) !== String(user.username)) return null;
       return o;
     },
-    [orders, user],
+    [user],
   );
 
   return (
     <OrderContext.Provider
       value={{
         orders,
-        addOrder,
         createOrder,
+        addOrder,
         getUserOrders,
         getUserOrderById,
+        refreshMyOrders,
       }}
     >
       {children}

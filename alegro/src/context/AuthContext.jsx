@@ -1,70 +1,44 @@
-import { createContext, useState, useEffect } from "react";
-import usersData from "../data/users.json";
+import { createContext, useEffect, useState } from "react";
+import { api } from "../mockServer/api";
 
 export const AuthContext = createContext();
 
+const SESSION_KEY = "user";
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  // Stan przechowujący wszystkich użytkowników (zaczynamy od pliku JSON, ale możemy dodawać nowych)
-  const [allUsers, setAllUsers] = useState([]);
 
   useEffect(() => {
-    // Ładowanie sesji zalogowanego usera
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-
-    // Ładowanie bazy użytkowników (jeśli były rejestracje, bierzemy z localStorage, jeśli nie - z JSON)
-    const savedUsersDb = localStorage.getItem("users_db");
-    if (savedUsersDb) {
-      setAllUsers(JSON.parse(savedUsersDb));
-    } else {
-      setAllUsers(usersData);
-    }
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed?.id) setUser(parsed);
+    } catch {}
   }, []);
 
-  const login = (username, password) => {
-    const foundUser = allUsers.find(
-      (u) => u.username === username && u.password === password,
-    );
+  useEffect(() => {
+    if (user) localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+    else localStorage.removeItem(SESSION_KEY);
+  }, [user]);
 
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem("user", JSON.stringify(foundUser));
-      return { success: true };
-    } else {
-      return { success: false, message: "Błędny login lub hasło" };
-    }
+  const login = async (username, password) => {
+    const res = await api.authLogin(username, password);
+    if (!res.ok) return { success: false, message: res.error };
+    setUser(res.user);
+    return { success: true };
   };
 
-  const register = (username, password, name) => {
-    // Sprawdź czy user już istnieje
-    const exists = allUsers.find((u) => u.username === username);
-    if (exists) {
-      return { success: false, message: "Taki użytkownik już istnieje!" };
-    }
-
-    const newUser = {
-      id: Date.now(),
-      username,
-      password,
-      name,
-      role: "user",
-    };
-
-    const updatedUsers = [...allUsers, newUser];
-    setAllUsers(updatedUsers);
-
-    // Zapisujemy nową bazę użytkowników w przeglądarce
-    localStorage.setItem("users_db", JSON.stringify(updatedUsers));
-
+  const register = async (username, password, name) => {
+    const res = await api.authRegister({ username, password, name });
+    if (!res.ok) return { success: false, message: res.error };
+    setUser(res.user);
     return { success: true };
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    localStorage.removeItem(SESSION_KEY);
   };
 
   return (

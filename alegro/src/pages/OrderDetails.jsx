@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { OrderContext } from "../context/OrderContext";
@@ -8,9 +8,22 @@ const OrderDetails = () => {
   const { user } = useContext(AuthContext);
   const { getUserOrderById } = useContext(OrderContext);
 
-  const order = useMemo(() => {
-    if (!user) return null;
-    return getUserOrderById(orderId);
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    const run = async () => {
+      setLoading(true);
+      const o = user ? await getUserOrderById(orderId) : null;
+      if (!alive) return;
+      setOrder(o);
+      setLoading(false);
+    };
+    run();
+    return () => {
+      alive = false;
+    };
   }, [user, orderId, getUserOrderById]);
 
   if (!user) {
@@ -21,6 +34,15 @@ const OrderDetails = () => {
         <Link to="/login" style={{ fontWeight: "bold" }}>
           Przejdź do logowania
         </Link>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div style={{ maxWidth: "900px", margin: "40px auto", padding: "20px" }}>
+        <h1>Szczegóły zamówienia</h1>
+        <p>Ładowanie…</p>
       </div>
     );
   }

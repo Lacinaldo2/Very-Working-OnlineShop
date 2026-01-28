@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { AuthContext } from "../context/AuthContext";
@@ -11,6 +11,9 @@ const Cart = () => {
     useContext(CartContext);
   const { user } = useContext(AuthContext);
   const { createOrder } = useContext(OrderContext);
+
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const isEmpty = cartItems.length === 0;
 
@@ -48,15 +51,30 @@ const Cart = () => {
     );
   }
 
-  const placeOrder = () => {
-    if (isEmpty) return;
+  const placeOrder = async () => {
+    if (isEmpty || submitting) return;
 
-    createOrder({
-      items: cartItems,
-      totalPrice: totals.totalPrice,
-    });
-    clearCart();
-    navigate("/history");
+    setError("");
+    setSubmitting(true);
+
+    try {
+      const res = await createOrder({
+        items: cartItems,
+        totalPrice: totals.totalPrice,
+      });
+
+      if (res && res.ok === false) {
+        setError(res.error || "Nie udało się złożyć zamówienia.");
+        setSubmitting(false);
+        return;
+      }
+
+      clearCart();
+      navigate("/history");
+    } catch (e) {
+      setError("Wystąpił błąd podczas składania zamówienia.");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -73,15 +91,17 @@ const Cart = () => {
         {!isEmpty && (
           <button
             onClick={clearCart}
+            disabled={submitting}
             style={{
               padding: "10px 14px",
               background: "#ef4444",
               color: "white",
               border: "none",
               borderRadius: "10px",
-              cursor: "pointer",
+              cursor: submitting ? "not-allowed" : "pointer",
               fontWeight: "bold",
               height: "fit-content",
+              opacity: submitting ? 0.7 : 1,
             }}
           >
             Wyczyść koszyk
@@ -144,20 +164,28 @@ const Cart = () => {
               style={{ height: "1px", background: "#e2e8f0", margin: "6px 0" }}
             />
 
+            {error && (
+              <div style={{ color: "#ef4444", fontWeight: "bold" }}>
+                {error}
+              </div>
+            )}
+
             <button
               onClick={placeOrder}
+              disabled={submitting}
               style={{
                 padding: "14px",
                 background: "#1e293b",
                 color: "white",
                 border: "none",
                 borderRadius: "10px",
-                cursor: "pointer",
+                cursor: submitting ? "not-allowed" : "pointer",
                 fontWeight: "bold",
                 fontSize: "1rem",
+                opacity: submitting ? 0.7 : 1,
               }}
             >
-              Złóż zamówienie
+              {submitting ? "Składanie..." : "Złóż zamówienie"}
             </button>
 
             <div style={{ color: "#64748b", fontSize: "0.9rem" }}>

@@ -1,7 +1,6 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -9,17 +8,16 @@ const Login = () => {
   const [error, setError] = useState("");
 
   const { login } = useContext(AuthContext);
-  const navigate = useNavigate(); // Do przekierowania po zalogowaniu
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = login(username, password);
+    setError("");
 
-    if (result.success) {
-      navigate("/"); // Przekieruj na stronę główną
-    } else {
-      setError(result.message);
-    }
+    const result = await login(username, password);
+
+    if (result.success) navigate("/");
+    else setError(result.message || "Błąd logowania.");
   };
 
   return (

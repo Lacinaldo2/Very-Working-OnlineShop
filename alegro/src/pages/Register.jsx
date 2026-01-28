@@ -11,22 +11,19 @@ const Register = () => {
   const { register } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    if (!username || !password || !name) {
-      setError("Wypełnij wszystkie pola!");
+    if (!username.trim() || !password.trim() || !name.trim()) {
+      setError("Uzupełnij wszystkie pola.");
       return;
     }
 
-    const result = register(username, password, name);
+    const result = await register(username, password, name);
 
-    if (result.success) {
-      alert("Konto założone! Możesz się zalogować.");
-      navigate("/login");
-    } else {
-      setError(result.message);
-    }
+    if (result.success) navigate("/");
+    else setError(result.message || "Błąd rejestracji.");
   };
 
   return (
@@ -40,7 +37,7 @@ const Register = () => {
         background: "white",
       }}
     >
-      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Załóż konto</h2>
+      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Rejestracja</h2>
 
       {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
 
@@ -48,17 +45,6 @@ const Register = () => {
         onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: "15px" }}
       >
-        <input
-          type="text"
-          placeholder="Imię i Nazwisko"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={{
-            padding: "10px",
-            borderRadius: "5px",
-            border: "1px solid #ccc",
-          }}
-        />
         <input
           type="text"
           placeholder="Login"
@@ -81,11 +67,23 @@ const Register = () => {
             border: "1px solid #ccc",
           }}
         />
+        <input
+          type="text"
+          placeholder="Imię i nazwisko"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          style={{
+            padding: "10px",
+            borderRadius: "5px",
+            border: "1px solid #ccc",
+          }}
+        />
+
         <button
           type="submit"
           style={{
             padding: "10px",
-            background: "#22c55e",
+            background: "#16a34a",
             color: "white",
             border: "none",
             borderRadius: "5px",
@@ -93,7 +91,7 @@ const Register = () => {
             fontWeight: "bold",
           }}
         >
-          Zarejestruj się
+          Zarejestruj
         </button>
       </form>
 
