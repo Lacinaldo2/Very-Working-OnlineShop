@@ -4,10 +4,15 @@ import { CartContext } from "../context/CartContext";
 import { AuthContext } from "../context/AuthContext";
 
 const Navbar = () => {
-  const { cart } = useContext(CartContext);
+  const cartCtx = useContext(CartContext);
   const { user, logout } = useContext(AuthContext);
 
-  const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+  const cartItems = cartCtx?.cartItems ?? [];
+
+  const cartCount = cartItems.reduce(
+    (acc, item) => acc + (Number(item.quantity) || 0),
+    0,
+  );
 
   return (
     <nav
@@ -23,7 +28,6 @@ const Navbar = () => {
         zIndex: 100,
       }}
     >
-      {/* Logo */}
       <Link
         to="/"
         style={{
@@ -36,7 +40,6 @@ const Navbar = () => {
         Alegro
       </Link>
 
-      {/* Linki */}
       <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
         <Link to="/" style={{ textDecoration: "none", color: "#64748b" }}>
           Sklep
@@ -81,7 +84,6 @@ const Navbar = () => {
           </Link>
         )}
 
-        {/* Sekcja Logowania / Profilu */}
         {user ? (
           <div
             style={{

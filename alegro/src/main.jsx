@@ -1,21 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
-import { CartProvider } from "./context/CartContext";
-import { AuthProvider } from "./context/AuthContext";
-import { OrderProvider } from "./context/OrderContext"; // <--- Nowy import
+import App from "./App.jsx";
 import "./index.css";
+
+import { AuthProvider } from "./context/AuthContext.jsx";
+import { CartProvider } from "./context/CartContext.jsx";
+import { OrderProvider } from "./context/OrderContext.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
-      <OrderProvider>
-        {" "}
-        {/* <--- Dodajemy tutaj */}
-        <CartProvider>
+      <CartProvider>
+        <OrderProvider>
           <App />
-        </CartProvider>
-      </OrderProvider>
+        </OrderProvider>
+      </CartProvider>
     </AuthProvider>
   </React.StrictMode>,
 );
