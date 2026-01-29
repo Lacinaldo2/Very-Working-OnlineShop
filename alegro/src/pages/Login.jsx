@@ -41,7 +41,7 @@ const Login = () => {
       >
         <input
           type="text"
-          placeholder="Login (np. student1)"
+          placeholder="Login (np. acc1(2))"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           style={{
@@ -87,7 +87,7 @@ const Login = () => {
       <div style={{ marginTop: "20px", fontSize: "0.8rem", color: "#666" }}>
         <p>Dane testowe:</p>
         <ul>
-          <li>student1 / 123</li>
+          <li>acc1(2) / 123</li>
           <li>admin / admin</li>
         </ul>
       </div>

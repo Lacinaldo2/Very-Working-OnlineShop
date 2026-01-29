@@ -4,11 +4,10 @@ import { Link } from "react-router-dom";
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [filter, setFilter] = useState("all"); // 'all' lub nazwa kategorii
+  const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Pobieramy produkty I kategorie równolegle
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -31,7 +30,6 @@ const Home = () => {
     fetchData();
   }, []);
 
-  // Logika filtrowania (Search + Kategoria)
   const filteredProducts = products.filter((product) => {
     const matchesCategory = filter === "all" || product.category === filter;
     const matchesSearch = product.title
@@ -51,7 +49,6 @@ const Home = () => {
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px" }}>
-      {/* --- Sekcja Hero / Nagłówek --- */}
       <div style={{ textAlign: "center", marginBottom: "40px" }}>
         <h1 style={{ fontSize: "2.5rem", marginBottom: "10px" }}>
           Witaj w Alegro
@@ -60,7 +57,6 @@ const Home = () => {
           Najbardziej legit strona w całej equestri
         </p>
 
-        {/* Wyszukiwarka */}
         <input
           type="text"
           placeholder="Szukaj produktu..."
@@ -78,7 +74,6 @@ const Home = () => {
         />
       </div>
 
-      {/* --- Pasek Kategorii --- */}
       <div
         style={{
           display: "flex",
@@ -122,7 +117,6 @@ const Home = () => {
         ))}
       </div>
 
-      {/* --- Siatka Produktów --- */}
       <div
         style={{
           display: "grid",

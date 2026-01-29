@@ -13,7 +13,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Navbar styling */
 nav {
   background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -33,7 +32,6 @@ nav a:hover {
   color: var(--primary);
 }
 
-/* Buttony i Inputy */
 button {
   transition: all 0.2s;
 }
@@ -46,7 +44,6 @@ input:focus {
   border-color: transparent;
 }
 
-/* Animacja pojawiania się produktów */
 @keyframes fadeIn {
   from {
     opacity: 0;

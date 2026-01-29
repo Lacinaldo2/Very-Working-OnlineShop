@@ -1,23 +1,23 @@
 [
   {
     "id": 1,
-    "username": "student1",
+    "username": "acc1",
     "password": "123",
     "role": "user",
-    "name": "Jan Kowalski"
+    "name": "Jan Furtak"
   },
   {
     "id": 2,
-    "username": "student2",
+    "username": "acc2",
     "password": "123",
     "role": "user",
-    "name": "Anna Nowak"
+    "name": "Szymon Łacina"
   },
   {
     "id": 99,
     "username": "admin",
     "password": "admin",
     "role": "admin",
-    "name": "Prowadzący (Admin)"
+    "name": "Admin"
   }
 ]
